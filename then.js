@@ -8,36 +8,28 @@ const rl = readline.createInterface({
 });
 const path = './index.html';
 const key = process.stdin.read();
+// const promises = [fsPromises(1500), fsPromises(4000), fsPromises(2000), fsPromises(3000)];
 
-// eslint-disable-next-line func-style
-
-const check = (async (key) => {
+Promise.all((fsPromises) => {
   try {
-    await fsPromises.readFile('./index.html');
-    await rl.question("File already exists, type 'Y' to overwrite   \r\n", (key) => {
-      if (!key === 'y') {
-        process.exit();
-      }
-      const html = (async () => {
-        try {
-          const response = await got('https://sindresorhus.com');
-          await fsPromises.writeFile('index.html', response.body);
-          console.log(`Downloaded and saved ${ fs.statSync("index.html").size } bytes to ${ path }`);
-        } catch (error) {
-          console.log(error);
-          //=> 'Internal server error ...'
+    fsPromises.readFile(path, 'utf8')
+      .then(() => {
+        return fsPromises.question("File already exists, type 'Y' to overwrite");
+      }).then((key) => {
+        if (!key === 'y') {
+          process.exit();
         }
-      })();
+      }).then((response) => {
+        response = got('https://sindresorhus.com');
+        return fsPromises.writeFile('index.html', response.body);
+      }).then((data) => {
+        console.log(`Downloaded and saved ${ fs.statSync("index.html").size } bytes to ${ path }`);
+      });
 
-
-    });
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    console.log(error);
   }
-
-})();
-
-
+});
 
 
 
